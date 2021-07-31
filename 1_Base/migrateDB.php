@@ -1,6 +1,6 @@
 <?php
 /*
- * Âûïîëíÿåòñÿ ìèãğàöèÿ òàáëèöû íåîáõîäèìîé äëÿ ğàáîòû ïğîåêòà
+ * ĞœĞ¸Ğ³Ñ€Ğ°Ñ†Ğ¸Ñ Ğ‘Ğ”
  */
 require_once 'config.php';
 
@@ -23,7 +23,7 @@ try {
     $dbh = new PDO($typeDB.':host='.$host.';dbname='.$dbName, $dbLogin, $dbPass);
     $dbh->exec($querryCreateTable);
     $dbh = null;
-    echo('Òàáëèöà óñïåøíî ñîçäàíà');
+    echo('Ğ¢Ğ°Ğ±Ğ»Ğ¸Ñ†Ñ‹ Ğ£ÑĞ¿ĞµÑˆĞ½Ğ¾ ÑĞ¾Ğ·Ğ´Ğ°Ğ½Ñ‹');
 } catch (PDOException $e) {
-    echo 'Ïîäêëş÷åíèå íå óäàëîñü: ' . $e->getMessage();
+    echo 'ĞÑˆĞ¸Ğ±ĞºĞ°: ' . $e->getMessage();
 }

@@ -1,22 +1,20 @@
 /*
- * Âàëèäàòîð äëÿ Email
- * äîïóñòèìûå ôîðìàòû
+ * Ð’Ð°Ð»Ð¸Ð´Ð°Ñ‚Ð¾Ñ€ Ð½Ð°Ð²ÐµÑˆÐ¸Ð²Ð°ÐµÑ‚ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚Ñ‡Ð¸Ðº Ð½Ð° Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ñ input Ð´Ð»Ñ Ð·Ð°Ð³Ñ€ÑƒÐ¶ÐµÐ½Ð½Ñ‹Ñ…
+ * Ñ„Ð°Ð¹Ð»Ð¾Ð². 
  */
-    let corretFormat = [];
     let filename = document.getElementById("formFile");
     filename.addEventListener('change',(e) => {
         let f = e.target.files,
             len = f.length;
         for (let i=0;i<len;i++){
-            console.log(f[i].name);
-            if (f[i].name.match(/[a-zA-Zà-ÿÀ-ß0-9]*.jpg|.bmp|.jpeg|.gif/) !== null) {
+            if (f[i].name.match(/[a-zA-ZÃ -Ã¿Ã€-ÃŸ0-9]*.jpg|.bmp|.jpeg|.gif/) !== null) {
                 filename.classList.remove('invalidFile');
                 filename.classList.add('validFile');}
             else {
                 filename.classList.remove('validFile');
                 filename.classList.add('invalidFile');
                 filename.valid;
-                alert("Íåêîððåêòíûé ôîðìàò ôàéëîâ, îíè íå áóäóò çàãðóæåíû, çàãðóçèòå â ôîðìàòå jpg, bmp, jpeg, gif");
+                alert("ÐÐµÐºÐ¾Ñ€Ñ€ÐµÐºÑ‚Ð½Ñ‹Ð¹ Ñ„Ð¾Ñ€Ð¼Ð°Ñ‚ Ð¸Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ð¹, Ð¿Ð¾Ð´Ñ…Ð¾Ð´ÑÑ‰Ð¸Ðµ -  jpg, bmp, jpeg, gif");
             }
         }
     });

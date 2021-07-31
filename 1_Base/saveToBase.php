@@ -3,52 +3,96 @@
  * 
  */
 require_once 'config.php';
-$typeTask = $_REQUEST["TypeTask"];
-$email = $_REQUEST["Email"];
-$userName = $_REQUEST["Name"];
-$message = $_REQUEST["Message"];
-$gender = $_REQUEST["Gender"];
+/*
+* checkFolderonDublicateName РїСЂРѕРІРµСЂСЏРµС‚ РїР°РїРєСѓ $folderName РЅР° СЃРѕРґРµСЂР¶Р°РЅРёРµ
+* РёРјРµРЅРё С„Р°Р№Р»Р° $fileName
+* Return true - РґСѓР±Р»РёРєР°С‚ РёРјРµРЅРё РµСЃС‚СЊ
+* false - РґСѓР±Р»РёРєР°С‚Р° РёРјРµРЅРё РЅРµС‚
+*/
+function checkFolderonDublicateName (string $folderName, string $fileName) {
+    $arrayFiles = scandir($folderName);
+    foreach ($arrayFiles as $fileInFolder) {
+        if (trim($fileInFolder) === trim($fileName)) {
+            return true;
+        }
+    }
+    return false;
+}
 
+/*
+* generateChars(n)
+* РіРµРЅРµСЂРёСЂСѓРµС‚ n РїРµСЂРµРјРµРЅРЅС‹С…
+* RETURN string
+*/
 function generateChars ($length=5)
 {   $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString = '';
+    $charactersLength = strlen($characters);
+    $randomString = '';
     for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)]; // добавляем к строке новый символ из $characters
-    }
+            $randomString .= $characters[rand(0, $charactersLength - 1)]; 
+        }
     return $randomString;
 }
 /*
- * Загрузка файлов на сервер
- * Требуются написать проверки на имя файла, для предотвращения перезаписи
- * Если имя существует -> перезаписать
- * $files - хранит информацию об именах файлов в виде массива, или null
+* checkInsertData РїСЂРѕРІРµСЂСЏРµС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ $data
+* РќР° СЃР»РµРґСѓСЋС‰РёРµ СЃРѕРѕС‚РІРµСЃС‚РІРёСЏ NOT NULL,
+* РѕС‡РёСЃС‚РєР° РѕС‚ СЃРїРµС†СЃРёРјРІРѕР»РѕРІ
+* RETURN string $data
+*/
+function checkInsertData (string $data) {
+    if ($data == null) {
+        print('denied');
+        die();
+    }
+    return $data = htmlspecialchars($data);
+}
+/*
+* РџРѕР»СѓС‡Р°РµРј РѕС‡РёС‰РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ Р·Р°РїСЂРѕСЃР°
+*/
+$typeTask = checkInsertData($_REQUEST["TypeTask"]);
+$email = checkInsertData($_REQUEST["Email"]);
+$userName = checkInsertData($_REQUEST["Name"]);
+$message = checkInsertData($_REQUEST["Message"]);
+$gender = checkInsertData($_REQUEST["Gender"]);
+
+/*
+ * РџСЂРѕРІРµСЂСЏРµРј Р·Р°РіСЂСѓР¶РµРЅС‹ Р»Рё С„Р°Р№Р»С‹, Р·Р°С‚РµРј РїСЂРѕРІРµСЂСЏРµРј РєР°Р¶РґС‹Р№ РЅР° СЃРѕРѕС‚РІРµС‚СЃРІРёРµ С„РѕСЂРјР°С‚Сѓ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+ * $files - СЃРѕРґРµСЂР¶РёС‚ С„Р°Р№Р»С‹ РїСЂРёРєСЂРµРїР»С‘РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚Р°Р»РµРј 
  */
 $files = null;
-if ($_FILES['formFile']['error'] == UPLOAD_ERR_OK) {
+if ($_FILES['formFile']) {
     foreach ($_FILES['formFile']["error"] as $key => $error) {
+        if ($error !== UPLOAD_ERR_OK) {
+            echo ('РѕС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё С„Р°Р№Р»Р°' . $_FILES["formFile"]["tmp_name"][$key]);
+            continue;
+        }
         $file = $_FILES["formFile"]["tmp_name"][$key];
         $filetypeMIME = mime_content_type($file);
         $filetype = explode('/', $filetypeMIME);
         if ($filetype[0] == 'image') {
             echo($filetypeMIME. ' is correct <pre>');
-            $filetypeFlag = TRUE;
-        }
-        else {$filetypeFlag = FALSE; 
-        echo($filetypeMIME. ' not correct <pre>');
-        }
-        if (($error == UPLOAD_ERR_OK) && $filetypeFlag) {
+            $filetypeFlag = true;
+         }else {$filetypeFlag = false; 
+            echo($filetypeMIME. ' not correct <pre>');
+            }
+        if ($filetypeFlag) {
             $name = generateChars(5).$_FILES["formFile"]["name"][$key];
+            $dublicateFlag = checkFolderonDublicateName('store/', $name);
+            $nCycle = 0;
+            while ($dublicateFlag && ($nCycle<100)) {
+                $nCycle++;
+                $name = generateChars(5).$_FILES["formFile"]["name"][$key];
+            }
             move_uploaded_file($file, "store/$name");
             echo('Sucess loaded '.$name.'<pre>');
             $files[] = $name;
-        }
-        else {echo('files not loaded errors:'. $error. '<pre>');}
+        }else {echo('files not loaded errors:'. $error. '<pre>');}
     }
+} else {
+    echo('files not attached by user <pre>');
 }
 /*
- * Осуществляем загрузку информации введёной пользователем  на сервер
- * ввести проверку кодировки имён файлов, пока работает только латиница
+ * Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РЅР°Р»РёС‡РёСЏ РёР»Рё РѕС‚СЃСѓС‚СЃРІРёСЏ С„Р°Р№Р»РѕРІ С„РѕСЂРјРёСЂСѓРµРј Р·Р°РїСЂРѕСЃ
  */
 if ($files === null) {
     $querryInsert = 'INSERT INTO '.$tableName.'(TypeTask, Email, Name, Message, Sex) VALUES '

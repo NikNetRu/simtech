@@ -1,13 +1,21 @@
   <head>
-    <title>Связаться с нами</title>
-    <meta name="description" content="">
+    <title>Р—Р°РіСЂСѓР¶РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <link href="linkToUs.css" rel="stylesheet" type="text/css"/> 
   </head>
   <body>
 <?php
 /*
- * 
+* $rowOnPage - С‡РёСЃР»Рѕ Р·Р°РїРёСЃРµР№ РЅР° СЃС‚СЂР°РЅРёС†Рµ
+* $drawedButton - С‡РёСЃР»Рѕ РєРЅРѕРїРѕРє РІС‹РІРѕРґРёРјС‹С… РІ
+* РіСЂР°РЅРёС†Сѓ РґРёР°РїР°Р·РѕРЅР° ($currentPage-$drawedButton...$currentPage+$drawedButton)
+*/
+$rowOnPage = 5;
+$drawedButton = 3;
+
+/*
+ * РѕРїСЂРµРґРµР»СЏРµРј РІ GET Р·Р°РїСЂРѕСЃРµ СѓРєР°Р·Р°РЅР° Р»Рё СЃС‚СЂР°РЅРёС†Р°
  */
 require_once 'config.php';
 
@@ -17,21 +25,27 @@ else {
     $numPage = 1;
 }
 /*
- * Определим число записей, в завсимости от числа, создадим соответсвующее
- * число страниц
+ * РџРѕРґРєР»СЋС‡Р°РµРјСЃСЏ Рє Р‘Р” -> РѕРїСЂРµРґРµР»СЏРµРј С‡РёСЃР»Рѕ Р·Р°РїРёСЃРµР№ -> Р§РёСЃР»Рѕ РІС‹РІРѕРґРёРјС‹С… СЃС‚СЂР°РЅРёС†
+ * Р¤РѕСЂРјРёСЂСѓРµРј  Р·Р°РїСЂРѕСЃ Рё РїРѕР»СѓС‡Р°РµРј Р·Р°РїРёСЃРё РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕР№ СЃС‚СЂР°РЅРёС†С‹
  */
 $dbh = new PDO($typeDB.':host='.$host.';dbname='.$dbName, $dbLogin, $dbPass);
 $querrySelectTable = 'SELECT * FROM '.$tableName;
 $resultQ = $dbh->query($querrySelectTable);
 $strokes = $resultQ->rowCount();
-$pages = ceil($strokes/5);
-$startline = $numPage*5-5;
-$strokes = 5;
-//сделаем выборку в зависимости от текущей страницы для 1 - с 1 по 5 запись
-$querrySelectTable = 'SELECT * FROM '.$tableName. ' LIMIT '.$startline." , ".$strokes;
+$pages = ceil($strokes/$rowOnPage);
+$startline = $numPage*$rowOnPage-$rowOnPage;
+$querrySelectTable = 'SELECT * FROM '.$tableName. ' LIMIT '.$startline." , ".$rowOnPage;
 try {
     $resultQ = $dbh->query($querrySelectTable);
-
+    }
+catch (PDOException $e) {
+        echo 'РћС€РёР±РєР° Р·Р°РїСЂРѕСЃР° Рє Р‘Р”: ' . $e->getMessage();
+        $dbh = null;
+        die();
+    }
+/*
+* Р•СЃР»Рё РѕС€РёР±РѕРє РЅРµС‚ РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј С‚Р°Р±Р»РёС†Сѓ
+*/
     echo("<table class='table table-bordered'>
             <thead>
               <tr>
@@ -50,30 +64,33 @@ try {
     foreach ($resultQ as $row) {
         $i++;
         echo("<tr>
-                <th scope=\"row\">$i</th>
-                <td>$row[0]</td>
-                <td>$row[1]</td>
-                <td>$row[2]</td>
-                <td>$row[3]</td>
-                <td>$row[6]</td>
-                <td>$row[4]</td> 
-                <td>");
-        foreach (explode(',',$row[5]) as $value) {
-        $line = trim($value);
-        echo("<img src = 'store/$line' class='rounded float-left' width='100' height='100'>");}
-        
-            echo ('</td></tr>');
-        };
+            <th scope=\"row\">$i</th>
+            <td>$row[0]</td>
+            <td>$row[1]</td>
+            <td>$row[2]</td>
+            <td>$row[3]</td>
+            <td>$row[6]</td>
+            <td>$row[4]</td> 
+            <td>");
+        if (!empty($row[5])) {
+            foreach (explode(',',$row[5]) as $value) {
+                $line = trim($value);
+                echo("<img src = 'store/$line' class='rounded float-left' width='100' height='100'>");
+            } 
+        }
+        echo ('</td></tr>');
+    };
     echo('</tbody>
         </table>');
      /*
-     * Запишем результаты запроса в Csv файл
+     * Р”Р»СЏ РѕС‚РїСЂР°РІРєРё СЃРїРёСЃРєР° СЂРµР·СѓР»СЊС‚Р°С‚Р° С„РѕСЂРјРёСЂСѓРµРј С„Р°Р№Р» СЃ РґР°РЅРЅС‹РјРё С‚Р°Р±Р»РёС†С‹ messagetoEmail.csv
+     * РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РѕС‚РїСЂР°РІР»РµРЅ РЅР° РїРѕС‡С‚Сѓ
      */
     $handle = fopen('messagetoEmail.csv', "w");
     $columnNames = array();
     $resultQ = $dbh->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '".$tableName."'");
     foreach ($resultQ->fetchAll(PDO::FETCH_ASSOC ) as $value) { 
-        array_push($columnNames, $value['COLUMN_NAME']);
+       array_push($columnNames, $value['COLUMN_NAME']);
     }
     fputcsv($handle, $columnNames, ';'); 
          
@@ -83,29 +100,39 @@ try {
         }
 
 
-    fclose($handle); //Закрываем= 
+    fclose($handle); 
     /*
-     * отрисовка ссылок на страницы
+     * СЂРёСЃСѓРµРј РєРЅРѕРїРѕС‡РєРё РґР»СЏ РїРµСЂРµРєР»СЋС‡Р°РµРЅРёСЏ СЃС‚СЂР°РЅРёС†
+     * $drawedButton - С‡РёСЃР»Рѕ РєРЅРѕРїРѕРє РІС‹РІРѕРґРёРјС‹С… РІ
+     * РіСЂР°РЅРёС†Сѓ РґРёР°РїР°Р·РѕРЅР° ($currentPage-$drawedButton...$currentPage+$drawedButton)
+     * $pages - С‡РёСЃР»Рѕ СЃС‚СЂР°РЅРёС†
      */
-    for ($i = 1; $i <= $pages; $i++) {
+    $drawedButton = 3;
+    $startingPositionBut = $numPage - $drawedButton;
+    $startingPositionBut = ($startingPositionBut < 1) ? 1 : $startingPositionBut;
+    $endingPositionBut = $numPage + $drawedButton;
+    $endingPositionBut = ($endingPositionBut > $pages) ? $pages : $endingPositionBut;
+    for ($i = $startingPositionBut; $i <= $endingPositionBut; $i++) {
         echo("<a class='link-primary center-block' href=?page=".$i."><button class='btn btn-primary'>".$i."</button></a>");
     }
     
-    // отрисовка формы для отправки данных на почту
-    echo(   "<form method='POST' class = 'form-group row' name = 'sendToEmail' id = 'sendToEmail' action='sendToEmail.php'>
-            <label>Email</label>
-            <input name = 'email' type='email' required></input>
-            <label>Для теста введите от чьего имени будет отправлено MyEmail@yandex.ru</label>
-            <input name = 'emailSender' type='email' required></input>
-            <label>Пароль для почты</label>
-            <input name = 'password' required></input>
-            <button type='submit; class='btn btn-primary mb-2'>Send to email</button>
-            </form>");
+    // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј С„РѕСЂРјСѓ РѕС‚РїСЂР°РІРєРё  С‚Р°Р±Р»РёС†С‹ РЅР° РїРѕС‡С‚Сѓ
+    echo(   "<div class = 'row justify-content-md-start'>
+                <div class='col-md-4'>
+                <form method='POST' class = 'form-group row linkToUs' name = 'sendToEmail' id = 'sendToEmail' action='sendToEmail.php'>
+                    <label>Email РЅР° РєРѕС‚РѕСЂС‹Р№ РѕС‚РїСЂР°РІР»РµРЅРѕ</label>
+                    <input name = 'email' type='email' required></input>
+                    <label>Р’Р°С€ Email</label>
+                    <input name = 'emailSender' type='email' required></input>
+                    <label>Р’Р°С€ РїР°СЂРѕР»СЊ</label>
+                    <input name = 'password' type = 'password' required></input>
+                    <button type='submit; class='btn btn-primary mb-2'>РћС‚РїСЂР°РІРёС‚СЊ</button>
+                </form>
+                </div>
+            </div>");
     
     $dbh = null;
-} catch (PDOException $e) {
-    echo 'Подключение не удалось: ' . $e->getMessage();
-}
+
 
 ?>
       
